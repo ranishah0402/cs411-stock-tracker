@@ -12,14 +12,14 @@ class Stock extends React.Component{
     }
 
     componentDidMount(){
-        this.getStock();
+        this.fetchStock();
     }
 
-    getStock(){
+    fetchStock(){
         const POINTER_TO_THIS = this;
         const API_KEY = 'IOJR3FGTVTYC4D2A';
         let StockSymbol = 'AMZN'; 
-        let API_Call = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${StockSymbol}&outputsize=compact&apikey=${API_KEY}';
+        let API_Call = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&outputsize=compact&apikey=${API_KEY}';
         let stockChartXValuesFunction = [];
         let stockChartYValuesFunction = [];
 
@@ -64,7 +64,7 @@ class Stock extends React.Component{
                         marker: {color: 'red'},
                     }
                     ]}
-                    layout={ {width: 320, height: 240, title: 'A Fancy Plot'} }
+                    layout={ {width: 320, height: 240, title: 'Single Stock Plot'} }
                 />
             </div>
         )
