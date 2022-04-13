@@ -18,16 +18,14 @@ class Stock extends React.Component{
     fetchStock(){
         const POINTER_TO_THIS = this;
         const API_KEY = 'IOJR3FGTVTYC4D2A';
-        let StockSymbol = 'AMZN'; 
+        /*let StockSymbol = 'AMZN'; */
         let API_Call = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&outputsize=compact&apikey=${API_KEY}';
         let stockChartXValuesFunction = [];
         let stockChartYValuesFunction = [];
 
         fetch(API_Call)
             .then(
-                function(response){
-                    return response.json();
-                }
+                response => response.json()
             )
             .then(
                 function(data){
@@ -37,6 +35,7 @@ class Stock extends React.Component{
                         stockChartXValuesFunction.push(key);
                         stockChartYValuesFunction.push(data['Time Series (Daily)'][key]['1. open']);
                     }
+                    console.log(stockChartXValuesFunction)
 
                     POINTER_TO_THIS.setState({
                         stockChartXValues: stockChartXValuesFunction,
@@ -57,14 +56,14 @@ class Stock extends React.Component{
                 <Plot
                     data={[
                     {
-                        x: this.stockChartXValues,
-                        y: this.stockChartYValues,
+                        x: this.state.stockChartXValues,
+                        y: this.state.stockChartYValues,
                         type: 'scatter',
                         mode: 'lines+markers',
                         marker: {color: 'red'},
                     }
                     ]}
-                    layout={ {width: 320, height: 240, title: 'Single Stock Plot'} }
+                    layout={ {width: 500, height: 400, title: 'Single Stock Plot'} }
                 />
             </div>
         )
