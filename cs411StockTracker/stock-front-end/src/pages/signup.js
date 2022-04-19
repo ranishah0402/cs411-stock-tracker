@@ -1,9 +1,12 @@
 import React from 'react';
+import Form from "./Form"
+import './Form.css'
+
   
 const SignUp = () => {
   return (
     <div>
-      <h1>Sign up page</h1>
+      <Form />
     </div>
   );
 };
