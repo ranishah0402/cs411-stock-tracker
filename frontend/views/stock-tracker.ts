@@ -1,0 +1,157 @@
+
+import "@vaadin/horizontal-layout/src/vaadin-horizontal-layout";
+import "@vaadin/vaadin-grid/src/vaadin-grid-column";
+import {LitElement, html, css, customElement, property, query} from 'lit-element';
+import {render} from 'lit-html';
+import * as StockService from  '../generated/StockService';
+import '@vaadin/vaadin-grid';
+import '@vaadin/vaadin-combo-box';
+import '@vaadin/vaadin-button';
+import '@vaadin/vaadin-ordered-layout';
+import { registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles.js';
+import '@vaadin/vaadin-grid/vaadin-grid.js';
+import '@vaadin/vaadin-grid/vaadin-grid-filter-column.js';
+import '@vaadin/vaadin-grid/vaadin-grid-sort-column.js';
+import '@vaadin/vaadin-grid/vaadin-grid-selection-column.js';
+import '@vaadin/vaadin-grid/vaadin-grid-filter.js';
+import '@vaadin/vaadin-combo-box/vaadin-combo-box.js';
+import '@vaadin/vaadin-ordered-layout/vaadin-vertical-layout.js';
+import '@vaadin/vaadin-ordered-layout/vaadin-horizontal-layout.js';
+import '@vaadin/horizontal-layout/theme/lumo/vaadin-horizontal-layout.js';
+
+registerStyles('vaadin-combo-box-item', css`
+    .symbol { font-weight: bold }
+    .name { font-size: 0.8rem }
+`);
+
+
+
+@customElement("stock-tracker")
+export class StockTracker extends LitElement {
+
+    render() {
+        return html`
+            <h1>StockTracker</h1>
+            <vaadin-grid .items=${this.items}>
+                <vaadin-grid-column path="symbol"></vaadin-grid-column>
+                <vaadin-grid-column path="price"></vaadin-grid-column>
+                <vaadin-grid-column .renderer=${this.renderPercentage} header="Percentage change"></vaadin-grid-column>
+                <vaadin-grid-column text-align="end" .renderer=${this.renderRemoveButton.bind(this)}></vaadin-grid-column>
+            </vaadin-grid>
+            <vaadin-horizontal-layout theme="spacing" style="align-items: baseline">
+                <vaadin-combo-box 
+                    @filter-changed=${this.onStockSearchStringChanged} 
+                    .renderer=${this.renderSearchBoxItems}
+                    id="stock-search" 
+                    label="Search for a stock symbol"
+                    item-label-path="symbol">
+                </vaadin-combo-box>
+                <vaadin-button theme="primary" @click=${this.onAddToList}>Add stock</vaadin-button>
+            </vaadin-horizontal-layout>
+        `;
+    }
+
+    static get styles() {
+        return css`
+        :host {
+            display: flex;
+            flex-flow: column;
+            box-sizing: border-box;
+            padding: var(--lumo-space-l);
+        }
+        .percentage {
+            color: green;
+            font-weight: bold;
+        }
+        .percentage.negative {
+            color: red;
+        }
+        vaadin-combo-box {
+            width: 300px;
+        }
+    `;
+    }
+
+    private stockAPIBaseUrl = 'https://financialmodelingprep.com/api/v3/quote/';
+
+    private searchApiURL = 'https://financialmodelingprep.com/api/v3/search?query=<query>&exchange=NASDAQ';
+
+    private removeButtonRenderer: Function = this.renderRemoveButton.bind(this);
+
+    @query("#stock-search")
+    private stockSearchBox: any;
+
+    @property({ type: Array })
+    private items = [];
+
+    firstUpdated() {
+        this.updateGrid();
+    }
+
+    private renderPercentage(root: any, _column: any, rowData: any) {
+        let percentage = rowData.item.changesPercentage;
+        let classString = percentage < 0 ? 'negative' : '';
+        let prefix = percentage < 0 ? '' : '+';
+
+        render(
+            html`<span class="percentage ${classString}">${prefix}${percentage}%</span>`,
+            root
+        );
+    }
+
+    private renderSearchBoxItems(root: any, _comboBox: any, model: any) {
+        render(
+            html`
+                <div class="search-box-item">
+                    <div class="symbol">${model.item.symbol}</div>
+                    <div class="name">${model.item.name}</div>
+                </div>`,
+            root
+        )
+    }
+
+    private renderRemoveButton(root: any, _column: any, rowData: any) {
+        render(
+            html`<vaadin-button @click=${() => this.onRemoveFromList(rowData.item.symbol)}>Remove</vaadin-button>`,
+            root
+        );
+    }
+
+    private updateGrid() {
+        StockService.getStocks().then(stocks => {
+
+            let symbols = stocks.map(stock => stock.symbol).concat(',');
+            let url = this.stockAPIBaseUrl + symbols;
+
+            fetch(url)
+                .then(result => result.json())
+                .then(jsonItems => this.items = jsonItems);
+        });
+    }
+
+    private onStockSearchStringChanged(filterEvent: any) {
+        let searchString = filterEvent.detail.value;
+        if (!searchString) {
+            this.stockSearchBox.filteredItems  = [];
+            return;
+        }
+
+        const url = this.searchApiURL.replace('<query>', searchString);
+
+        fetch(url)
+            .then(result => result.json())
+            .then(jsonItems => this.stockSearchBox.filteredItems  = jsonItems);
+    }
+
+    private onAddToList() {
+        let symbol = this.stockSearchBox.selectedItem?.symbol;
+
+        if (symbol) {
+            StockService.addStock({ symbol }).then(_ => this.updateGrid());
+        }
+    }
+
+    private onRemoveFromList(symbol: string) {
+        StockService.removeStock({ symbol }).then(_ => this.updateGrid());
+    }
+}
