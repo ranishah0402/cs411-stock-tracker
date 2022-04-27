@@ -7,10 +7,27 @@ import SignUp from './pages/signup';
 import LogInPage from './pages/login'; 
 import { BrowserRouter as Router, Routes, Route}
     from 'react-router-dom';
+import {useEffect} from 'react'
+
+
 
 function App() {
+  
+
+  useEffect(() => {
+    //do something on load
+    console.log("Hey I have loaded up");
+
+    fetch("http://localhost:8080/api/items")
+    .then((response) => response.json())
+    .then((todoItems) => {
+    console.log(todoItems);
+  });
+});
+
   return (
     <div className="App">
+
       <Router>
       <Navbar />
       <Routes>
@@ -21,7 +38,7 @@ function App() {
       </Router>
       
     </div>
+    
   );
 }
-
 export default App;
