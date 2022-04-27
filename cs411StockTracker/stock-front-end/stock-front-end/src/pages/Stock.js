@@ -64,7 +64,7 @@ class Stock extends React.Component{
                         marker: {color: 'red'},
                     }
                     ]}
-                    layout={ {width: 500, height: 400, title: 'Single Stock Plot'} }
+                    layout={ {width: 500, height: 400, title: 'Stock Plot for AMZN'} }
                 />
             </div>
         )

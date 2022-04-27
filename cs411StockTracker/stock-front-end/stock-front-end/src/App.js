@@ -8,6 +8,7 @@ import LogInPage from './pages/login';
 import { BrowserRouter as Router, Routes, Route}
     from 'react-router-dom';
 import {useEffect} from 'react'
+import Plots from './pages/Plots';
 
 
 
@@ -34,6 +35,7 @@ function App() {
           <Route path='/index' element={<Home />} />
           <Route path='/login' element={<LogInPage/>} />
           <Route path='/signup' element={<SignUp/>} />
+          <Route path='/Plots' element={<Plots/>} />
       </Routes>
       </Router>
       
